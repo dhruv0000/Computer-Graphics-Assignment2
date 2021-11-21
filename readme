@@ -1,0 +1,13 @@
+CSL7450 : Computer Graphics
+Programming-Assignment : 2
+---------------------------
+
+Students : 
+1. Dhruv Patel (B18CSE012)
+2. Vineeth Reddy (B18CS)
+-----------------------------
+
+Instructions to Run the code :
+1. g++ assn2.cpp -lGL -lglut -lGLU
+2. ./a.out
+--------------------------------------------------------------
