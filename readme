@@ -8,6 +8,8 @@ Students :
 -----------------------------
 
 Instructions to Run the code :
-1. g++ assn2.cpp -lGL -lglut -lGLU
-2. ./a.out
+1. g++ cat01.cpp -lGL -lglut -lGLU -o cat01.out 
+2. ./cat01.out
 --------------------------------------------------------------
+
+Other models can be ran similarly.

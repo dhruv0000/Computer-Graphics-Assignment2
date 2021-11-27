@@ -17,7 +17,7 @@ void display()
     vector<vector<int>> faces; //Stores faces i.e. triangles
     int VERTEX_COUNT,FACE_COUNT,EDGE_COUNT;
     float left, right, bottom, top, near, far;
-    float cX = -70, cY = 30, cZ = 10;//Camera co-ordinates
+    float cX = -70, cY = 30, cZ = 30;//Camera co-ordinates
     string line;
 
     if (myfile.is_open()){
