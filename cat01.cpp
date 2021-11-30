@@ -1,114 +1,118 @@
-#include<GL/glut.h>
-#include<bits/stdc++.h>
+#include <GL/glut.h> // (or others, depending on the system in use)
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <fstream>
+#include <iostream>
+#include <bits/stdc++.h>
+
 using namespace std;
 
-void display()
-{
-    glClear (GL_COLOR_BUFFER_BIT); // Clear display window.
-    glColor3f (1.0, 1.0, 1.0); // Set point color to black.
-    // glScalef(0.1f, 0.1f, 0.1f);
-    
-    ifstream myfile ("PA2_Models/cat01.off");
-    float tempX ,tempY ,tempZ ;
-    float projX, projY;
-    int face_verti_1,face_verti_2,face_verti_3;
-    vector<vector<float>> vertices; //Stores vertices
-    vector<vector<float>> proj; //Stores projections of 3D vertices
-    vector<vector<int>> faces; //Stores faces i.e. triangles
-    int VERTEX_COUNT,FACE_COUNT,EDGE_COUNT;
-    float left, right, bottom, top, near, far;
-    float cX = -40, cY = -50, cZ = 10;//Camera co-ordinates
-    string line;
-
-    if (myfile.is_open()){
-        getline (myfile,line);
-        if(line == "OFF"){
-            getline (myfile,line);
-            sscanf(line.c_str(), "%d %d %d", &VERTEX_COUNT, &FACE_COUNT, &EDGE_COUNT);
-            getline(myfile,line);
-            sscanf(line.c_str(), "%f %f %f", &tempX, &tempY, &tempZ);
-            tempX = tempX- cX;//xe - tx
-            tempY = tempY- cY;//ye - ty
-            tempZ = tempZ- cZ;//ze- - tz
-            //tempX *= -1; tempY *= -1; tempZ *= -1;
-            vector<float> a; a.push_back(tempX); a.push_back(tempY); a.push_back(tempZ);
-            vertices.push_back(a);
-            near = tempZ; far = near;
-            for(int verti = 1; verti < VERTEX_COUNT; verti++){
-                getline(myfile,line);
-                sscanf(line.c_str(), "%f %f %f", &tempX, &tempY, &tempZ);
-                tempX = tempX - cX;
-                tempY = tempY - cY;
-                tempZ = tempZ - cZ;
-                vector<float> a; a.push_back(tempX); a.push_back(tempY); a.push_back(tempZ);
-                vertices.push_back(a);
-                near = near < tempZ ? near : tempZ;
-                far = far < tempZ ? tempZ : far;
-            }   
-            tempX = vertices[0][0]; tempY = vertices[0][1]; tempZ = vertices[0][2];
-            left = near*tempX/tempZ; right = left;
-            bottom = near*tempY/tempZ; top = bottom;
-            vector<float> b;
-            b.push_back(left); b.push_back(bottom);
-            proj.push_back(b);
-            for(int verti = 1; verti < VERTEX_COUNT; verti++){
-                tempX = vertices[verti][0]; tempY = vertices[verti][1]; tempZ = vertices[verti][2];
-                projX = near*tempX/tempZ;
-                projY = near*tempY/tempZ;
-                left = left < projX ? left : projX;
-                right = right < projX ? projX : right;
-                bottom = bottom < projY ? bottom : projY;
-                top = top < projY ? projY : top;
-                vector<float> b; b.push_back(projX); b.push_back(projY);
-                proj.push_back(b);
-            }
-            cout<<"The values of near, far, left, right, bottom, top respectively are :\n";
-            cout<<near<<", "<<far<<", "<<left<<", "<<right<<", "<<bottom<<", "<<top<< "\n";
-            for(int faci = 0; faci < FACE_COUNT; faci++){
-                getline(myfile,line);
-                sscanf(line.c_str(), "3 %d %d %d", &face_verti_1, &face_verti_2, &face_verti_3);
-                vector<int> a; a.push_back(face_verti_1); a.push_back(face_verti_2); a.push_back(face_verti_3);
-                faces.push_back(a);
-            }
+vector<string> splitString(string s){
+    vector<string> outp;
+    string temp = "";
+    for(int i=0;i<s.length();i++){
+        if(s[i] == ' '){
+            outp.push_back(temp);
+            temp = "";
         }
-        myfile.close();
-    } 
-    else 
-    {
-        cout << "File Not Found. \n";
+        else{
+            temp += s[i];
+        }
+    }
+    if(temp != ""){
+        outp.push_back(temp);
+    }
+    return outp;
+}
+
+void initGL() {
+   glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color to black and opaque
+   glClearDepth(1.0f);                   // Set background depth to farthest
+   glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
+   glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
+   glShadeModel(GL_SMOOTH);   // Enable smooth shading
+   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
+}
+
+void display() {   
+    printf("In CircleIUA algorithm\n");
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+    glMatrixMode(GL_MODELVIEW);     // To operate on model-view matrix
+
+    glLoadIdentity();                 // Reset the model-view matrix
+    glTranslatef(0.0f, 0.0f, -10.0f);  // Move right and into the screen
+    glScalef(0.3f,0.3f,0.3f);
+
+    float xlight = -70;
+	float ylight = 30;
+	float zlight = 60;
+
+     vector<float> l;		
+            // light source coordinates wrt camera.
+			l.push_back((xlight));
+			l.push_back((ylight));
+			l.push_back((zlight));
+
+    ifstream model_file;
+    model_file.open("PA2_Models/cat01.off");
+    string text;
+    getline(model_file, text);
+    getline(model_file, text);
+    vector<string> details = splitString(text);
+    int numVertices = stoi(details[0]);
+    int numFaces = stoi(details[1]);
+    int numEdges = stoi(details[2]);
+    vector<vector<string>> vertices(numVertices);
+    for(int i=0;i<numVertices;i++){
+        getline(model_file, text);
+        vertices[i] = splitString(text);
+    }
+    vector<vector<string>> faces(numFaces);
+    for(int i=0;i<numFaces;i++){
+        getline(model_file, text);
+        faces[i] = splitString(text);
     }
     glBegin(GL_TRIANGLES);
-    for(int faci = 0; faci < 42000  ; faci++){
-    int face_verti_1 = faces[faci][0]; int face_verti_2 = faces[faci][1]; int face_verti_3 = faces[faci][2];
-    GLfloat t1X = proj[face_verti_1][0]; GLfloat t1Y = proj[face_verti_1][1];
-    GLfloat t2X = proj[face_verti_2][0]; GLfloat t2Y = proj[face_verti_2][1];
-    GLfloat t3X = proj[face_verti_3][0]; GLfloat t3Y = proj[face_verti_3][1];
-    glVertex2f(t1X, t1Y);
-    glVertex2f(t2X, t2Y);
-    glVertex2f(t3X, t3Y);
+        glColor3f(0.0f, 1.0f, 0.0f);
+        for(int i=0;i<numFaces;i++){
+            int v1 = stoi(faces[i][1]);
+            int v2 = stoi(faces[i][2]);
+            int v3 = stoi(faces[i][3]);
+            glVertex3f(stof(vertices[v1][0])/10, stof(vertices[v1][1])/10, stof(vertices[v1][2])/10);
+            glVertex3f(stof(vertices[v2][0])/10, stof(vertices[v2][1])/10, stof(vertices[v2][2])/10);
+            glVertex3f(stof(vertices[v3][0])/10, stof(vertices[v3][1])/10, stof(vertices[v3][2])/10);
+        }
+    glEnd();
+    glutSwapBuffers();
 }
 
-glEnd();
-glFlush();
+/* Handler for window re-size event. Called back when the window first appears and
+   whenever the window is re-sized with its new width and height */
+void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integer
+   // Compute aspect ratio of the new window
+   if (height == 0) height = 1;                // To prevent divide by 0
+   GLfloat aspect = (GLfloat)width / (GLfloat)height;
+ 
+   // Set the viewport to cover the new window
+   glViewport(0, 0, width, height);
+ 
+   // Set the aspect ratio of the clipping volume to match the viewport
+   glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
+   glLoadIdentity();             // Reset
+   // Enable perspective projection with fovy, aspect, zNear and zFar
+   gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 }
 
-
-int main (int argc, char** argv)
-{
-    glutInit (&argc, argv); // Initialize GLUT.
-    glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB); // Set display mode.
-    glutInitWindowPosition (0, 0); // Set top-left display-window position.
-    glutInitWindowSize (500, 500); // Set display-window width and height.
-    
-    glutCreateWindow ("PA2"); // Create display window.
-    
-    glClearColor (0.0, 0.0, 0.0, 0.0); // display window color is black.
-    glMatrixMode (GL_PROJECTION); // projection parameters.
-    glLoadIdentity();
-    //gluOrtho2D (-100.0, 0.0, -100.0, 0.0);
-    gluOrtho2D (-10.0, 0.0, -20.0, 0.0);
-
-    glutDisplayFunc(display);
-    glutMainLoop ( ); // Display everything and wait.
-    return 0;
+int main(int argc, char** argv) {
+   glutInit(&argc, argv);            // Initialize GLUT
+   glutInitDisplayMode(GLUT_DOUBLE); // Enable double buffered mode
+   glutInitWindowSize(500, 500);   // Set the window's initial width & height
+   glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
+   glutCreateWindow("PA 2");          // Create window with the given title
+   glutDisplayFunc(display);       // Register callback handler for window re-paint event
+   glutReshapeFunc(reshape);       // Register callback handler for window re-size event
+   initGL();                       // Our own OpenGL initialization
+   glutMainLoop();                 // Enter the infinite event-processing loop
+   return 0;
 }
