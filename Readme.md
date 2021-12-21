@@ -1,19 +1,6 @@
 CSL7450 : Computer Graphics
 Programming-Assignment : 2
----------------------------
 
-Students (and Contributions) : 
-
-1. Dhruv Patel (B18CSE012)
-    - Find oriented normal for each triangle of the mesh.
-    - Implement the back-face culling and Z-buffer algorithms
-    - Perform the normalized device coordinate transformation.
-2. Vineeth Reddy (B18CSE059)
-    - Determine the coordinates of the view frustum such that all the triangles lie in the view frustum.
-    - Phong shading algorithm with highlights and ambient lightning
-    - triangle rasterization algorithm to render the object.
-
-NOTE: We both sat together and did the assignment as pair programming for one model and replicated the same method for other models, so most of the contributions are intertwined, but we tried our best to see who did the major part.
 -----------------------------
 
 You can find the output images in the `/img` folder.
